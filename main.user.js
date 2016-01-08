@@ -184,7 +184,18 @@ function tb_export()
     var res = "" + compos[compo] + " " + styles[style] + " " + line_att_mil[att] + line_att_mil[mid] + line_def[def] + " " + mental + "/" + tempo + "/" + pressing + " ";
     res = res + (mark === 'true' ? "I" : "Z") + " " + (hj === 'true' ? "O" : "N");
 
-    unsafeWindow.alert(res);
+    $.get("http://fr.onlinesoccermanager.com/Lineup", function (data) {
+        var compo = $(data).find('#divFormationContent').find('dl').find('dt').find('a').find('span').html().replace(/-/g, '').replace(/ /g, '').trim();
+        var val = $(data).find('#divLineupValue').html().replace(/€/g, '').trim();
+        res = compo + " " + res + "\n" + val + "€";
+        
+        // TO DO
+       // $.get("http://fr.onlinesoccermanager.com/League/Results", function (data) {
+            // parse match result here, handle start of league exception (no match)
+     //   }
+
+        unsafeWindow.alert(res);
+    });
 }
 
 /* 
