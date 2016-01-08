@@ -189,12 +189,16 @@ function tb_export()
         var val = $(data).find('#divLineupValue').html().replace(/€/g, '').trim();
         res = compo + " " + res + "\n" + val + "€";
         
-        // TO DO
-       // $.get("http://fr.onlinesoccermanager.com/League/Results", function (data) {
+        $.get("http://fr.onlinesoccermanager.com/League/Results", function (d) {
             // parse match result here, handle start of league exception (no match)
-     //   }
-
-        unsafeWindow.alert(res);
+            if ($(d).find('#divPossessionLeft').length) {
+                res += "\nDom : " + $(d).find('#divPossessionLeft').html().trim() + " - " + $(d).find('#divPossessionRight').find('div').html().trim();
+                res += "\nMoy : " + $(d).find('.tdAverageGrade').next().html().trim();
+                res += "\nRes : " + $(d).find('#tblResults').find('.selected').find('.center').html() + " - " +
+                                  + $(d).find('#tblResults').find('.selected').find('.center').next().next().html();
+            }
+            unsafeWindow.alert(res);
+        });
     });
 }
 
