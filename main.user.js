@@ -98,7 +98,7 @@ function init_tacts()
 function tb_rename(tid)
 {
     var t = JSON.parse(GM_getValue(OSM_STORE_BASE + "tact." + tid, JSON.stringify(DEFAULT_TACT)));
-    var new_name = unsafeWindow.prompt("Modifiez le nom de la tactique :");
+    var new_name = unsafeWindow.prompt("Modifiez le nom de la tactique :", $('#tb-rn-' + tid).html());
     if (new_name && new_name.trim()) {
        $('#tb-rn-' + tid).html(new_name);
        t.name = new_name;
