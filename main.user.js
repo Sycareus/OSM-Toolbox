@@ -7,10 +7,11 @@
 // @description  Suite d'outils pour managers flemmards
 // @author       Sycarus
 // @include      http://*.onlinesoccermanager.com/Team/Tactic
-// @require      https://code.jquery.com/jquery-2.1.1.min.js
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_log
+// @grant        GM_listValues
 // @grant        unsafeWindow
 // ==/UserScript==
 
@@ -23,15 +24,15 @@ var DEFAULT_TACT = {
     att: 2,
     mil: 1,
     def: 0,
-    marking: false,
-    hj: false,
+    marking: "false",
+    hj: "false",
     mental: 65,
     tempo: 70,
     pressing: 35,
     name: "t"
 };
 
-/*var OSM_TACTS = OSM_TACTS || */init_tacts();
+var OSM_TACTS = OSM_TACTS || init_tacts();
 
 var tb_holder1 = "<div class='frameContent transparentContent'>  \
                     <div class='frameContentImages'>  \
@@ -51,39 +52,44 @@ var tb_holder3 = "'></div>  \
                     </div>  \
                  </div>";
 
-$('#divSidebarRight').appendChild(tb_holder1 + "Tactiques" + tb_holder2 + "tb-tacts" + tb_holder3);
-$('#divSidebarRight').appendChild(tb_holder1 + "Curseurs" + tb_holder2 + "tb-cursors" + tb_holder3);
+$('#divSidebarRight').empty();
+
+$('#divSidebarRight').append(tb_holder1 + "Tactiques" + tb_holder2 + "tb-tacts" + tb_holder3);
+$('#divSidebarRight').append(tb_holder1 + "Curseurs" + tb_holder2 + "tb-cursors" + tb_holder3);
+
+$('#tb-tacts').append("<div class='tb-tact'><input type='button' class='tb-btn-export customGreenButton' id='tb-export-btn' value='Exporter tactique' style='margin-top:2px; margin-bottom:0;'></div>");
+$('#tb-export-btn').on('click', function() { tb_export(); });
 
 for(var i = 1 ; i <= NB_TACTS ; i++)
 {
-    var tact = GM_getValue(OSM_STORE_BASE + "tact." + i, "{t : 't'}");
-    var namet = !(tact) || !(tact.name) || tact.name === "t" ? "Tactique " + i : tact.name;
-    $('#tb-tacts').appendChild("<div id='tact" + i + "' class='tb-tact'>  \
-                             <h3>"+ namet + "</h3>  \
-                             <input type='button' onclick='tb_rename(" + i + ")' class='tb-btn-rename customGreenButton'>(renommer)</input> \
-                             <div style='clear: both'></div>  \
-                             <input type='button' onclick='tb_apply(" + i + ")' class='tb-btn-apply customGreenButton'>Appliquer</input>   \
-                             <input type='button' onclick='tb_change(" + i + ")' class='tb-btn-save customGreenButton'>Enregistrer</input> \
+    var tact = JSON.parse(GM_getValue(OSM_STORE_BASE + "tact." + i, JSON.stringify(DEFAULT_TACT)));
+    var namet = tact.name === "t" ? ("Tactique " + i) : tact.name;
+    $('#tb-tacts').append("<div id='tact" + i + "' class='tb-tact'>  \
+                             <h3 class='tb-name' id='tb-rn-" + i + "'>"+ namet + "</h3>  \
+                             <input type='button' id='tb-ap-" + i + "' class='tb-btn-apply customGreenButton' value='Appliquer'>   \
+                             <input type='button' id='tb-en-" + i + "' class='tb-btn-save customGreenButton' value='Enregistre'> \
                           </div>");
+    $('#tb-ap-' + i).on('click', function() { tb_apply(parseInt(this.id.toString().substring(6))); });
+    $('#tb-en-' + i).on('click', function() { tb_change(parseInt(this.id.toString().substring(6))); });
+    $('#tb-rn-' + i).on('click', function() { tb_rename(parseInt(this.id.toString().substring(6))); });
 }
-
-$('#tb-tacts').appendChild("<div class='tb-tact'><input type='button' onclick='tb_export()' class='tb-btn-export customGreenButton'>Exporter tactique</input></div>");
 
 var tb_cursors_names = ["Mentality", "Tempo", "Pressing"];
 
 for (var e in tb_cursors_names)
 {
-    $('#tb-cursors').appendChild("<label for='tb-in-" + tb_cursors_names[e] +"'>" + tb_cursors_names[e] + "</label> \
-    <input type='number' class='us_curs_box' max='100' min='0' id='tb-in-" + tb_cursors_names[e] + "' value='" + $('#' + tb_cursors_names[e]).value + "' \
-    onchange='function(){document.getElementById(\'Tempo\').value = this.value;}' style='width:126px;text-align:center;font-size:17px;margin-top:10px;'></input>");
-    $('#' + tb_cursors_names[e]).onchange = function() {$('#tb-in-' + tb_cursors_names[e]).value = this.value;};
+    $('#tb-cursors').append(" \
+    <input type='number' class='tb_curs_box' max='100' label='" + tb_cursors_names[e] + "' min='0' id='tb-in-" + tb_cursors_names[e] + "' value='" + document.getElementById(tb_cursors_names[e]).value + "' \
+    style='width:126px;text-align:center;font-size:17px;margin-top:10px;'>");
+    $('#div'+tb_cursors_names[e]).on('slidestop', function() { document.getElementById('tb-in-' + this.id.toString().substring(3)).value = document.getElementById(this.id.toString().substring(3)).value;} );
+    $('#tb-in-' + tb_cursors_names[e]).on('change', function() { $("#div" + this.id.toString().substring(6)).slider("value", this.value); document.getElementById(this.id.toString().substring(6)).value = this.value;} );
 }
 
 function init_tacts()
 {
-    for (var n = 1 ; n <= NB_TACTS ; i++) {
-        if (GM_getValue(OSM_STORE_BASE + "tact." + n, "n") === "n") {
-            GM_setValue(OSM_STORE_BASE + "tact." + n, DEFAULT_TACT);
+    for (var n = 1 ; n <= NB_TACTS ; n++) {
+        if (GM_getValue(OSM_STORE_BASE + "tact." + n, "") === "") {
+            GM_setValue(OSM_STORE_BASE + "tact." + n, JSON.stringify(DEFAULT_TACT));
         }
     }
    // return true;
@@ -91,17 +97,18 @@ function init_tacts()
 
 function tb_rename(tid)
 {
-    var t = GM_getValue(OSM_STORE_BASE + "tact." + tid, DEFAULT_TACT);
-    var new_name = prompt("Modifiez le nom de la tactique :");
-    $('#tact' + tid).find('h3').innerHTML = new_name;
-    t.name = new_name;
-    GM_setValue(OSM_STORE_BASE + "tact." + tid, t);
-    alert("Tactique renommée en " + new_name);
+    var t = JSON.parse(GM_getValue(OSM_STORE_BASE + "tact." + tid, JSON.stringify(DEFAULT_TACT)));
+    var new_name = unsafeWindow.prompt("Modifiez le nom de la tactique :");
+    if (new_name && new_name.trim()) {
+       $('#tb-rn-' + tid).html(new_name);
+       t.name = new_name;
+       GM_setValue(OSM_STORE_BASE + "tact." + tid, JSON.stringify(t));
+    }
 }
 
 function tb_apply(tid)
 {
-    var t = GM_getValue(OSM_STORE_BASE + "tact." + tid, DEFAULT_TACT);
+    var t = JSON.parse(GM_getValue(OSM_STORE_BASE + "tact." + tid, JSON.stringify(DEFAULT_TACT)));
     document.getElementById('hiddenTacticsForm_Style').value = t.style;
     document.getElementById('hiddenTacticsForm_OverallMatchTactics').value = t.compo;
     document.getElementById('edtAttack').value = t.att;
@@ -115,26 +122,26 @@ function tb_apply(tid)
     
     document.getElementById('btnConfirm2').name = "SUBMIT";
     document.forms[0].submit();
-    alert("Tactique appliquée, chargement en cours...");
+    unsafeWindow.alert("Tactique appliquée, chargement en cours...");
 }
 
 function tb_change(tid)
 {
-    var t = GM_getValue(OSM_STORE_BASE + "tact." + tid, DEFAULT_TACT);
+    var t = JSON.parse(GM_getValue(OSM_STORE_BASE + "tact." + tid, JSON.stringify(DEFAULT_TACT)));
     
     t.style = parseInt(document.getElementById('hiddenTacticsForm_Style').value);
     t.compo = parseInt(document.getElementById('hiddenTacticsForm_OverallMatchTactics').value);
     t.att = parseInt(document.getElementById('edtAttack').value);
-    t.mid = parseInt(document.getElementById('edtMidfield').value);
+    t.mil = parseInt(document.getElementById('edtMidfield').value);
     t.def = parseInt(document.getElementById('edtDefence').value);
     t.marking = document.getElementById('hiddenTacticsForm_Marking').value;
     t.hj = document.getElementById('hiddenTacticsForm_OffsideTrap').value;
-    t.mental = document.getElementById('Mentality').value;
-    t.tempo = document.getElementById('Tempo').value;
-    t.pressing = document.getElementById('Pressing').value;
+    t.mental = parseInt(document.getElementById('Mentality').value);
+    t.tempo = parseInt(document.getElementById('Tempo').value);
+    t.pressing = parseInt(document.getElementById('Pressing').value);
     
-    GM_setValue(OSM_STORE_BASE + "tact." + tid, t);
-    alert("Tactique " + $('#tact' + tid).find('h3').innerHTML + " modifiée.");
+    GM_setValue(OSM_STORE_BASE + "tact." + tid, JSON.stringify(t));
+    unsafeWindow.alert("Tactique \"" + $("#tb-rn-" + tid).html() + "\" modifiée.");
 }
 
 GM_addStyle('\
@@ -143,15 +150,17 @@ GM_addStyle('\
     	padding: 5px;\
 	    background: #eeeeee;\
 	    border: 2px solid #30BA35;\
-	    border-radius: 10px;\
-	    -moz-border-radius: 15px;\
-	    -webkit-border-radius: 15px;\
+	    border-radius: 3px;\
+	    -moz-border-radius: 3px;\
+	    -webkit-border-radius: 3px;\
     }\
-    .tb-btn-rename { float: right; }  \
-    .tb-btn-save { width: 45%; }  \
-    .tb-btn-apply { width: 45%; }  \
+    .tb-btn-export { font-size: 13px; margin-bottom: 3px;}  \
+    .tb-btn-save { width: 45%; padding: 5px 1px; font-size: 12px; }  \
+    .tb-btn-apply { width: 45%; padding: 5px 1px; font-size: 12px; }  \
     .tb-tacts { padding: 10 5px; }  \
-    .tb-tact { padding: 10 0px; }  \
+    .tb-tact { padding: 10px 0 0 0; }  \
+    .tb-name { margin: 7px 0; display: block;}  \
+    #tb-tacts { padding-top: 0; } \
 ');
 
 function tb_export()
@@ -173,9 +182,9 @@ function tb_export()
     var line_def = ["D", "L", "M"];
     
     var res = "" + compos[compo] + " " + styles[style] + " " + line_att_mil[att] + line_att_mil[mid] + line_def[def] + " " + mental + "/" + tempo + "/" + pressing + " ";
-    res = res + mark ? "I" : "Z" + " " + hj ? "O" : "N";
-    
-    alert(res);
+    res = res + (mark === 'true' ? "I" : "Z") + " " + (hj === 'true' ? "O" : "N");
+
+    unsafeWindow.alert(res);
 }
 
 /* 
