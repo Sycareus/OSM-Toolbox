@@ -10,8 +10,6 @@
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
-// @grant        GM_log
-// @grant        GM_listValues
 // @grant        unsafeWindow
 // ==/UserScript==
 
@@ -44,7 +42,7 @@ var tb_holder2 = "</span></div> \
                     </div>  \
                     <div class='frameContentHolder noPadding'>   \
                        <div class='frameContentContainer'>  \
-                          <div class='divAssistantSidebarContent' id='";
+                          <div class='divAssistantSidebarContent'  style='background-color: #fff; !important' id='";
 
 var tb_holder3 = "'></div>  \
                           <div class='divAssistantSidebarBottom'></div>  \
@@ -73,6 +71,9 @@ for(var i = 1 ; i <= NB_TACTS ; i++)
     $('#tb-en-' + i).on('click', function() { tb_change(parseInt(this.id.toString().substring(6))); });
     $('#tb-rn-' + i).on('click', function() { tb_rename(parseInt(this.id.toString().substring(6))); });
 }
+
+$('#tb-tacts').append("<div class='tb-tact'><input type='button' class='tb-btn-export customGreenButton' id='tb-tof-btn' value='Tactof - random' style='width: 97%; margin-top:2px; margin-bottom:0;'></div>");
+$('#tb-tof-btn').on('click', function() { tb_rantof(); });
 
 var tb_cursors_names = ["Mentality", "Tempo", "Pressing"];
 
@@ -183,23 +184,61 @@ function tb_export()
     
     var res = "" + compos[compo] + " " + styles[style] + " " + line_att_mil[att] + line_att_mil[mid] + line_def[def] + " " + mental + "/" + tempo + "/" + pressing + " ";
     res = res + (mark === 'true' ? "I" : "Z") + " " + (hj === 'true' ? "O" : "N");
-
-    $.get("http://fr.onlinesoccermanager.com/Lineup", function (data) {
-        var compo = $(data).find('#divFormationContent').find('dl').find('dt').find('a').find('span').html().replace(/-/g, '').replace(/ /g, '').trim();
-        var val = $(data).find('#divLineupValue').html().replace(/€/g, '').trim();
-        res = compo + " " + res + "\n" + val + "€";
-        
+    
         $.get("http://fr.onlinesoccermanager.com/League/Results", function (d) {
             // parse match result here, handle start of league exception (no match)
             if ($(d).find('#divPossessionLeft').length) {
-                res += "\nDom : " + $(d).find('#divPossessionLeft').html().trim() + " - " + $(d).find('#divPossessionRight').find('div').html().trim();
-                res += "\nMoy : " + $(d).find('.tdAverageGrade').next().html().trim();
-                res += "\nRes : " + $(d).find('#tblResults').find('.selected').find('.center').html() + " - " +
-                                  + $(d).find('#tblResults').find('.selected').find('.center').next().next().html();
+                // manager is right or left ?
+                var isLeft = $(d).find('#tblMatchDetails').find('tbody').find('tr').find('td').find('a').html() === $(d).find('#divProfileName').html();
+                // get compo to the manager's side
+                var compo = $(d).find('#tblMatchDetails').find('tbody').find('tr').next().next().find(isLeft ? ".left" : ".right").html().replace(/-/g, '').replace(/ /g, '').trim();
+                var sumRight = 0;
+                var sumLeft = 0;
+                var pInfo;
+                // compute left team value
+                var leftPanel = $(d).find('#tblPlayerGradesRight').prev();
+                $.ajaxSetup({async: false});
+                $(leftPanel).find('tbody').find('tr').each(function () {
+                    pInfo = $(this).find('td').next().find('a');
+                    GM_log($(pInfo).next());
+                    if ((!($(pInfo).next().length) || ($(pInfo).next().length && $(pInfo).next().prop('src').toString().indexOf('icon_subin.png') === -1)) && $(pInfo).data('nr') && $(pInfo).data('compnr') && $(pInfo).data('teamnr'))
+                    $.get("http://fr.onlinesoccermanager.com/Player/Profile?PlayerNr=" + $(pInfo).data('nr') + "&CompNr=" + $(pInfo).data('compnr') + "&TeamNr=" + $(pInfo).data('teamnr'), function (r) {
+                        sumLeft += parseInt($(r).find('#trEstVal').find('td').next().html().replace(/€/g, '').replace(/ /g, '').replace(/\u00a0/g, '').replace(/&nbsp;/g, '').trim());
+                    });
+                });
+                // compute right team value
+                var rightPanel = $(leftPanel).next().find('tbody');
+                $(rightPanel).find('tr').each(function () {
+                    pInfo = $(this).find('td').next().find('a');
+                    GM_log($(pInfo).next());
+                    if ((!($(pInfo).next().length) || ($(pInfo).next().length && $(pInfo).next().prop('src').toString().indexOf('icon_subin.png') === -1)) && $(pInfo).data('nr') && $(pInfo).data('compnr') && $(pInfo).data('teamnr'))
+                    $.get("http://fr.onlinesoccermanager.com/Player/Profile?PlayerNr=" + $(pInfo).data('nr') + "&CompNr=" + $(pInfo).data('compnr') + "&TeamNr=" + $(pInfo).data('teamnr'), function (r) {
+                        sumRight += parseInt($(r).find('#trEstVal').find('td').next().html().replace(/€/g, '').replace(/ /g, '').replace(/\u00a0/g, '').replace(/&nbsp;/g, '').trim());
+                    });
+                });
+                res = compo + " " + res + "\nVal team : " + (isLeft ? sumLeft : sumRight) + "€\nVal adv  : " + (isLeft ? sumRight : sumLeft) + "€";
             }
             unsafeWindow.alert(res);
-        });
+            $.ajaxSetup({async: true});
     });
+}
+
+function tb_rantof()
+{
+    document.getElementById('hiddenTacticsForm_Style').value = Math.round(Math.random() * 3);
+    document.getElementById('hiddenTacticsForm_OverallMatchTactics').value = Math.round(Math.random() * 4);
+    document.getElementById('edtAttack').value = Math.round(Math.random() * 2);
+    document.getElementById('edtMidfield').value = Math.round(Math.random() * 2);
+    document.getElementById('edtDefence').value = Math.round(Math.random() * 2);
+    document.getElementById('hiddenTacticsForm_Marking').value = Math.round(Math.random()) ? "true" : "false";
+    document.getElementById('hiddenTacticsForm_OffsideTrap').value = Math.round(Math.random()) ? "true" : "false";
+    document.getElementById('Mentality').value = Math.round(Math.random() * 100);
+    document.getElementById('Tempo').value = Math.round(Math.random() * 100);
+    document.getElementById('Pressing').value = Math.round(Math.random() * 100);
+    
+    document.getElementById('btnConfirm2').name = "SUBMIT";
+    document.forms[0].submit();
+    unsafeWindow.alert("Lettof a encore frappé...");
 }
 
 /* 
