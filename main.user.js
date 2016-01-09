@@ -1,4 +1,4 @@
-// ==UserScript==
+ï»¿// ==UserScript==
 // @name         OSM Toolbox
 // @namespace    OSM.Tactic.Toolbox
 // @version      0.1
@@ -123,7 +123,7 @@ function tb_apply(tid)
     
     document.getElementById('btnConfirm2').name = "SUBMIT";
     document.forms[0].submit();
-    unsafeWindow.alert("Tactique appliquée, chargement en cours...");
+    unsafeWindow.alert("Tactique appliquÃ©e, chargement en cours...");
 }
 
 function tb_change(tid)
@@ -142,7 +142,7 @@ function tb_change(tid)
     t.pressing = parseInt(document.getElementById('Pressing').value);
     
     GM_setValue(OSM_STORE_BASE + "tact." + tid, JSON.stringify(t));
-    unsafeWindow.alert("Tactique \"" + $("#tb-rn-" + tid).html() + "\" modifiée.");
+    unsafeWindow.alert("Tactique \"" + $("#tb-rn-" + tid).html() + "\" modifiÃ©e.");
 }
 
 GM_addStyle('\
@@ -203,7 +203,7 @@ function tb_export()
                     GM_log($(pInfo).next());
                     if ((!($(pInfo).next().length) || ($(pInfo).next().length && $(pInfo).next().prop('src').toString().indexOf('icon_subin.png') === -1)) && $(pInfo).data('nr') && $(pInfo).data('compnr') && $(pInfo).data('teamnr'))
                     $.get("http://fr.onlinesoccermanager.com/Player/Profile?PlayerNr=" + $(pInfo).data('nr') + "&CompNr=" + $(pInfo).data('compnr') + "&TeamNr=" + $(pInfo).data('teamnr'), function (r) {
-                        sumLeft += parseInt($(r).find('#trEstVal').find('td').next().html().replace(/€/g, '').replace(/ /g, '').replace(/\u00a0/g, '').replace(/&nbsp;/g, '').trim());
+                        sumLeft += parseInt($(r).find('#trEstVal').find('td').next().html().replace(/â‚¬/g, '').replace(/ /g, '').replace(/\u00a0/g, '').replace(/&nbsp;/g, '').trim());
                     });
                 });
                 // compute right team value
@@ -213,10 +213,10 @@ function tb_export()
                     GM_log($(pInfo).next());
                     if ((!($(pInfo).next().length) || ($(pInfo).next().length && $(pInfo).next().prop('src').toString().indexOf('icon_subin.png') === -1)) && $(pInfo).data('nr') && $(pInfo).data('compnr') && $(pInfo).data('teamnr'))
                     $.get("http://fr.onlinesoccermanager.com/Player/Profile?PlayerNr=" + $(pInfo).data('nr') + "&CompNr=" + $(pInfo).data('compnr') + "&TeamNr=" + $(pInfo).data('teamnr'), function (r) {
-                        sumRight += parseInt($(r).find('#trEstVal').find('td').next().html().replace(/€/g, '').replace(/ /g, '').replace(/\u00a0/g, '').replace(/&nbsp;/g, '').trim());
+                        sumRight += parseInt($(r).find('#trEstVal').find('td').next().html().replace(/â‚¬/g, '').replace(/ /g, '').replace(/\u00a0/g, '').replace(/&nbsp;/g, '').trim());
                     });
                 });
-                res = compo + " " + res + "\nVal team : " + (isLeft ? sumLeft : sumRight) + "€\nVal adv  : " + (isLeft ? sumRight : sumLeft) + "€";
+                res = compo + " " + res + "\nVal team : " + (isLeft ? sumLeft : sumRight) + "â‚¬\nVal adv  : " + (isLeft ? sumRight : sumLeft) + "â‚¬";
             }
             unsafeWindow.alert(res);
             $.ajaxSetup({async: true});
@@ -238,7 +238,7 @@ function tb_rantof()
     
     document.getElementById('btnConfirm2').name = "SUBMIT";
     document.forms[0].submit();
-    unsafeWindow.alert("Lettof a encore frappé...");
+    unsafeWindow.alert("Lettof a encore frappÃ©...");
 }
 
 /* 
