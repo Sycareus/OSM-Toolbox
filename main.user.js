@@ -1,4 +1,4 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name         OSM Toolbox
 // @namespace    OSM.Tactic.Toolbox
 // @version      0.1
@@ -120,7 +120,7 @@ function tb_apply(tid)
     document.getElementById('Mentality').value = t.mental;
     document.getElementById('Tempo').value = t.tempo;
     document.getElementById('Pressing').value = t.pressing;
-    
+
     document.getElementById('btnConfirm2').name = "SUBMIT";
     document.forms[0].submit();
     unsafeWindow.alert("Tactique appliquée, chargement en cours...");
@@ -129,7 +129,7 @@ function tb_apply(tid)
 function tb_change(tid)
 {
     var t = JSON.parse(GM_getValue(OSM_STORE_BASE + "tact." + tid, JSON.stringify(DEFAULT_TACT)));
-    
+
     t.style = parseInt(document.getElementById('hiddenTacticsForm_Style').value);
     t.compo = parseInt(document.getElementById('hiddenTacticsForm_OverallMatchTactics').value);
     t.att = parseInt(document.getElementById('edtAttack').value);
@@ -140,7 +140,7 @@ function tb_change(tid)
     t.mental = parseInt(document.getElementById('Mentality').value);
     t.tempo = parseInt(document.getElementById('Tempo').value);
     t.pressing = parseInt(document.getElementById('Pressing').value);
-    
+
     GM_setValue(OSM_STORE_BASE + "tact." + tid, JSON.stringify(t));
     unsafeWindow.alert("Tactique \"" + $("#tb-rn-" + tid).html() + "\" modifiée.");
 }
@@ -176,15 +176,15 @@ function tb_export()
     var mental = parseInt(document.getElementById('Mentality').value);
     var tempo = parseInt(document.getElementById('Tempo').value);
     var pressing = parseInt(document.getElementById('Pressing').value);
-    
+
     var styles = ["MOD", "NOR", "AGR", "TOR"];
     var compos = ["LB", "P10", "SLA", "CA", "TDL"];
     var line_att_mil = ["D", "M", "A"];
     var line_def = ["D", "L", "M"];
-    
+
     var res = "" + compos[compo] + " " + styles[style] + " " + line_att_mil[att] + line_att_mil[mid] + line_def[def] + " " + mental + "/" + tempo + "/" + pressing + " ";
     res = res + (mark === 'true' ? "I" : "Z") + " " + (hj === 'true' ? "O" : "N");
-    
+
         $.get("http://fr.onlinesoccermanager.com/League/Results", function (d) {
             // parse match result here, handle start of league exception (no match)
             if ($(d).find('#divPossessionLeft').length) {
@@ -235,18 +235,18 @@ function tb_rantof()
     document.getElementById('Mentality').value = Math.round(Math.random() * 100);
     document.getElementById('Tempo').value = Math.round(Math.random() * 100);
     document.getElementById('Pressing').value = Math.round(Math.random() * 100);
-    
+
     document.getElementById('btnConfirm2').name = "SUBMIT";
     document.forms[0].submit();
     unsafeWindow.alert("Lettof a encore frappé...");
 }
 
-/* 
+/*
  * Note :
  * 0, 1, 2, 3 : style : mod, norm, agr, tor
  * 0, 1, 2, 3, 4 : mode : lb, p10, ailes, ca, tdl
  * 0, 1, 2 : lignes : def, mil, att
  * marking : true si indi, false si zone
  * hj : true si oui, false si non
- * 
+ *
 */
