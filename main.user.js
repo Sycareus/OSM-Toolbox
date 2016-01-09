@@ -200,7 +200,6 @@ function tb_export()
                 $.ajaxSetup({async: false});
                 $(leftPanel).find('tbody').find('tr').each(function () {
                     pInfo = $(this).find('td').next().find('a');
-                    GM_log($(pInfo).next());
                     if ((!($(pInfo).next().length) || ($(pInfo).next().length && $(pInfo).next().prop('src').toString().indexOf('icon_subin.png') === -1)) && $(pInfo).data('nr') && $(pInfo).data('compnr') && $(pInfo).data('teamnr'))
                     $.get("http://fr.onlinesoccermanager.com/Player/Profile?PlayerNr=" + $(pInfo).data('nr') + "&CompNr=" + $(pInfo).data('compnr') + "&TeamNr=" + $(pInfo).data('teamnr'), function (r) {
                         sumLeft += parseInt($(r).find('#trEstVal').find('td').next().html().replace(/€/g, '').replace(/ /g, '').replace(/\u00a0/g, '').replace(/&nbsp;/g, '').trim());
@@ -210,7 +209,6 @@ function tb_export()
                 var rightPanel = $(leftPanel).next().find('tbody');
                 $(rightPanel).find('tr').each(function () {
                     pInfo = $(this).find('td').next().find('a');
-                    GM_log($(pInfo).next());
                     if ((!($(pInfo).next().length) || ($(pInfo).next().length && $(pInfo).next().prop('src').toString().indexOf('icon_subin.png') === -1)) && $(pInfo).data('nr') && $(pInfo).data('compnr') && $(pInfo).data('teamnr'))
                     $.get("http://fr.onlinesoccermanager.com/Player/Profile?PlayerNr=" + $(pInfo).data('nr') + "&CompNr=" + $(pInfo).data('compnr') + "&TeamNr=" + $(pInfo).data('teamnr'), function (r) {
                         sumRight += parseInt($(r).find('#trEstVal').find('td').next().html().replace(/€/g, '').replace(/ /g, '').replace(/\u00a0/g, '').replace(/&nbsp;/g, '').trim());
@@ -241,7 +239,7 @@ function tb_rantof()
     unsafeWindow.alert("Lettof a encore frappé...");
 }
 
-/*
+/* 
  * Note :
  * 0, 1, 2, 3 : style : mod, norm, agr, tor
  * 0, 1, 2, 3, 4 : mode : lb, p10, ailes, ca, tdl
