@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         OSM Toolbox
 // @namespace    OSM.Tactic.Toolbox
-// @version      0.1
+// @version      0.2
 // @downloadURL  https://github.com/Sycareus/OSM-Toolbox/blob/master/main.user.js
 // @updateURL    https://github.com/Sycareus/OSM-Toolbox/blob/master/main.user.js
 // @description  Suite d'outils pour managers flemmards
 // @author       Sycarus
 // @include      http://*.onlinesoccermanager.com/Team/Tactic
+// @require      https://code.jquery.com/jquery-2.1.1.min.js
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -191,28 +192,38 @@ function tb_export()
                 // manager is right or left ?
                 var isLeft = $(d).find('#tblMatchDetails').find('tbody').find('tr').find('td').find('a').html() === $(d).find('#divProfileName').html();
                 // get compo to the manager's side
-                var compo = $(d).find('#tblMatchDetails').find('tbody').find('tr').next().next().find(isLeft ? ".left" : ".right").html().replace(/-/g, '').replace(/ /g, '').trim();
+                var compo;
+                if ($(d).find('#tblMatchDetails').find('tbody').find('tr').next().next().find('.spnTeamForm').length)
+                    compo = $(d).find('#tblMatchDetails').find('tbody').find('tr').next().next().next().find(isLeft ? ".left" : ".right").html().replace(/-/g, '').replace(/ /g, '').trim();
+                else
+                    compo = $(d).find('#tblMatchDetails').find('tbody').find('tr').next().next().find(isLeft ? ".left" : ".right").html().replace(/-/g, '').replace(/ /g, '').trim();
                 var sumRight = 0;
                 var sumLeft = 0;
-                var pInfo;
+                var pInfo, iInfo;
                 // compute left team value
                 var leftPanel = $(d).find('#tblPlayerGradesRight').prev();
                 $.ajaxSetup({async: false});
                 $(leftPanel).find('tbody').find('tr').each(function () {
+                    iInfo = $(this).find('td').next().find('img');
                     pInfo = $(this).find('td').next().find('a');
-                    if ((!($(pInfo).next().length) || ($(pInfo).next().length && $(pInfo).next().prop('src').toString().indexOf('icon_subin.png') === -1)) && $(pInfo).data('nr') && $(pInfo).data('compnr') && $(pInfo).data('teamnr'))
-                    $.get("http://fr.onlinesoccermanager.com/Player/Profile?PlayerNr=" + $(pInfo).data('nr') + "&CompNr=" + $(pInfo).data('compnr') + "&TeamNr=" + $(pInfo).data('teamnr'), function (r) {
-                        sumLeft += parseInt($(r).find('#trEstVal').find('td').next().html().replace(/€/g, '').replace(/ /g, '').replace(/\u00a0/g, '').replace(/&nbsp;/g, '').trim());
-                    });
+                    if ((!($(iInfo).length) || ($(iInfo).length && $(iInfo).prop('src').toString().indexOf('icon_subin.png') === -1)) && $(pInfo).data('nr') && $(pInfo).data('compnr') && $(pInfo).data('teamnr'))
+                    {
+                        $.get("http://fr.onlinesoccermanager.com/Player/Profile?PlayerNr=" + $(pInfo).data('nr') + "&CompNr=" + $(pInfo).data('compnr') + "&TeamNr=" + $(pInfo).data('teamnr'), function (r) {
+                            sumLeft += parseInt($(r).find('#trEstVal').find('td').next().html().replace(/€/g, '').replace(/ /g, '').replace(/\u00a0/g, '').replace(/&nbsp;/g, '').trim());
+                        });
+                    }
                 });
                 // compute right team value
                 var rightPanel = $(leftPanel).next().find('tbody');
                 $(rightPanel).find('tr').each(function () {
+                    iInfo = $(this).find('td').next().find('img');
                     pInfo = $(this).find('td').next().find('a');
-                    if ((!($(pInfo).next().length) || ($(pInfo).next().length && $(pInfo).next().prop('src').toString().indexOf('icon_subin.png') === -1)) && $(pInfo).data('nr') && $(pInfo).data('compnr') && $(pInfo).data('teamnr'))
-                    $.get("http://fr.onlinesoccermanager.com/Player/Profile?PlayerNr=" + $(pInfo).data('nr') + "&CompNr=" + $(pInfo).data('compnr') + "&TeamNr=" + $(pInfo).data('teamnr'), function (r) {
-                        sumRight += parseInt($(r).find('#trEstVal').find('td').next().html().replace(/€/g, '').replace(/ /g, '').replace(/\u00a0/g, '').replace(/&nbsp;/g, '').trim());
-                    });
+                    if ((!($(iInfo).length) || ($(iInfo).length && $(iInfo).prop('src').toString().indexOf('icon_subin.png') === -1)) && $(pInfo).data('nr') && $(pInfo).data('compnr') && $(pInfo).data('teamnr'))
+                    {
+                        $.get("http://fr.onlinesoccermanager.com/Player/Profile?PlayerNr=" + $(pInfo).data('nr') + "&CompNr=" + $(pInfo).data('compnr') + "&TeamNr=" + $(pInfo).data('teamnr'), function (r) {
+                            sumRight += parseInt($(r).find('#trEstVal').find('td').next().html().replace(/€/g, '').replace(/ /g, '').replace(/\u00a0/g, '').replace(/&nbsp;/g, '').trim());
+                        });
+                    }
                 });
                 res = compo + " " + res + "\nVal team : " + (isLeft ? sumLeft : sumRight) + "€\nVal adv  : " + (isLeft ? sumRight : sumLeft) + "€";
             }
@@ -239,7 +250,7 @@ function tb_rantof()
     unsafeWindow.alert("Lettof a encore frappé...");
 }
 
-/* 
+/*
  * Note :
  * 0, 1, 2, 3 : style : mod, norm, agr, tor
  * 0, 1, 2, 3, 4 : mode : lb, p10, ailes, ca, tdl
